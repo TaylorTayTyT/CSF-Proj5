@@ -44,24 +44,34 @@ int chat_with_client(struct Calc *calc, int client_fd) {
 	if (strcmp(buf, "quit\n") == 0 || strcmp(buf, "quit\r\n") == 0) {
 		return 0;
 	} else {
+		val = calc_eval(calc, buf, &val);
+		/*
+    //Not sure if we need all of this since we know that we are only reading 1 line per entry, and it is stored in buf
 		FILE *in = fmemopen(buf, (size_t) rc, "r");
 		while (fscanf(in, "%s", temp) == 1) {
 			strcat(buf, temp);
 		}
+    //this refers to stuff above ^. I think we just need to get the evaluted value then have the server spit out the answer as a response.
 	  int error = calc_eval(calc, buf, &val);
     if(error == 0) {
       return 0;
     }
+    printf("\nHello!\n");
     //this is printing the buf.
     //Why?
 		rio_writen(client_fd, buf, strlen(buf));
 		return 1;
+		*/
 	}
+	return 1;
 }
 	
 int main(int argc, char **argv) {
 	/* TODO: implement this program */
 	//I literally just copies and pasted this form Lecture 27
+  if (argc != 2) { 
+		return -1; 
+	}
 	int port = atoi(argv[1]);
 	//default to 1024
 	if (port < 1024) {
@@ -71,17 +81,20 @@ int main(int argc, char **argv) {
 	//create the calculator
 	struct Calc *calc = calc_create();
 	//not given the port number
-	if (argc != 2) { 
-		return -1; 
-		}
-	int server_fd = open_listenfd(argv[1]);
+
+		printf("ARGUMENT: %s", argv[1]);
+		//int server_fd = create_server_socket(port);
+		int server_fd = open_listenfd(argv[1]);
+	//int server_fd = open_listenfd(argv[1]);
 	if (server_fd < 0) { return -1; }
 	int keep_going = 1;
 	while (keep_going) {
+		struct sockaddr_in clientaddr;
+		//int client_fd = accept_connection(server_fd, clientaddr);
 		int client_fd = Accept(server_fd, NULL, NULL);
 		if (client_fd > 0) {
 			keep_going = chat_with_client(calc, client_fd);
-			close(client_fd); // close the connection
+			//close(client_fd); // close the connection
 		}
 	}
 	close(server_fd); // close server socket
