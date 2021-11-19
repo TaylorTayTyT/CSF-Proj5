@@ -40,23 +40,30 @@ int chat_with_client(struct Calc *calc, int client_fd) {
   ssize_t rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
   if (rc < 0) { return 1; } // error reading data from client
   buf[rc] = '\0';
-
-  printf("THIS IS STRING: %s\n", buf);
   
-  if (strcmp(buf, "quit\n") == 0 || strcmp(buf, "quit\r\n") == 0) {
-    return 0;
-  } else if( strcmp(buf, "shutdown\n") == 0 || strcmp(buf, "shutdown\r\n") == 0) {
-    return -1;
-  }  else {
+  // printf("THIS IS STRING: %s\n", buf);
+  int ex = 1;
+  while (ex == 1){
+    //rio_readinitb(&rio, client_fd);
     
-    result = calc_eval(calc, buf, &val);
-    printf("BEFORE:\n");
-    snprintf(temp, 1024, "%d", val);
-    printf("PASSES PRINT\n");
-    rio_writen(client_fd, temp, strlen(temp));
+    if (strcmp(buf, "quit\n") == 0 || strcmp(buf, "quit\r\n") == 0) {
+      ex = 0;
+    } else if( strcmp(buf, "shutdown\n") == 0 || strcmp(buf, "shutdown\r\n") == 0) {
+      ex = -1;
+    }  else {
+      
+      result = calc_eval(calc, buf, &val);
+      //printf("BEFORE:\n");
+      snprintf(temp, 1024, "%d\n", val);
+      //printf("PASSES PRINT\n");
+      rio_writen(client_fd, temp, strlen(temp));
+      ex = 1;
+       memset(buf, 0, sizeof(buf));
+     rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
+    }
     
   }
-  return 1;
+  return ex;
 }
 
 int main(int argc, char **argv) {
