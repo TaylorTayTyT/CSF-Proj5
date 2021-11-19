@@ -29,10 +29,8 @@ int accept_connection(int ssock_fd, struct sockaddr_in clientaddr) {
 
 int chat_with_client(struct Calc *calc, int client_fd) {
   
-  //printf("ENTERED \n");
   rio_t rio;
   int val;
-  int result;
   char temp[1024];
   rio_readinitb(&rio, client_fd);
   char buf[1024];
@@ -41,10 +39,8 @@ int chat_with_client(struct Calc *calc, int client_fd) {
   if (rc < 0) { return 1; } // error reading data from client
   buf[rc] = '\0';
   
-  // printf("THIS IS STRING: %s\n", buf);
   int ex = 1;
   while (ex == 1){
-    //rio_readinitb(&rio, client_fd);
     
     if (strcmp(buf, "quit\n") == 0 || strcmp(buf, "quit\r\n") == 0) {
       ex = 0;
@@ -52,10 +48,10 @@ int chat_with_client(struct Calc *calc, int client_fd) {
       ex = -1;
     }  else {
       
-      result = calc_eval(calc, buf, &val);
-      //printf("BEFORE:\n");
+      calc_eval(calc, buf, &val);
+      
       snprintf(temp, 1024, "%d\n", val);
-      //printf("PASSES PRINT\n");
+      
       rio_writen(client_fd, temp, strlen(temp));
       ex = 1;
        memset(buf, 0, sizeof(buf));
@@ -67,8 +63,6 @@ int chat_with_client(struct Calc *calc, int client_fd) {
 }
 
 int main(int argc, char **argv) {
-  /* TODO: implement this program */
-	//I literally just copies and pasted this form Lecture 27
   if (argc != 2) { 
     return -1; 
   }
@@ -80,21 +74,15 @@ int main(int argc, char **argv) {
   
   //create the calculator
   struct Calc *calc = calc_create();
-  //not given the port number
   
   printf("ARGUMENT: %s", argv[1]);
-  //int server_fd = create_server_socket(port);
   int server_fd = open_listenfd(argv[1]);
-  //int server_fd = open_listenfd(argv[1]);
   if (server_fd < 0) { return -1; }
   int keep_going = 1;
    int client_fd = Accept(server_fd, NULL, NULL);
   while (keep_going != -1) {
-    struct sockaddr_in clientaddr;
-    //int client_fd = accept_connection(server_fd, clientaddr);
     if (client_fd > 0) {
       keep_going = chat_with_client(calc, client_fd);
-      // close the connection
     }
     if(keep_going == 0) {
       close(client_fd);
