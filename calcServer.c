@@ -1,6 +1,12 @@
 #include <stdio.h>      /* for snprintf */
 #include "csapp.h"
 #include "calc.h"
+#include <pthread.h>
+
+struct aThread {
+  int client_fd;
+  struct Calc *calc;
+};
 
 int create_server_socket(int port) {
   struct sockaddr_in serveraddr = {0};
@@ -38,14 +44,14 @@ int chat_with_client(struct Calc *calc, int client_fd) {
   ssize_t rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
   if (rc < 0) { return 1; } // error reading data from client
   buf[rc] = '\0';
-  
+
   int ex = 1;
   while (ex == 1){
     
     if (strcmp(buf, "quit\n") == 0 || strcmp(buf, "quit\r\n") == 0) {
       ex = 0;
     } else if( strcmp(buf, "shutdown\n") == 0 || strcmp(buf, "shutdown\r\n") == 0) {
-      ex = -1;
+      exit(1);
     }  else {
       
       calc_eval(calc, buf, &val);
@@ -54,12 +60,30 @@ int chat_with_client(struct Calc *calc, int client_fd) {
       
       rio_writen(client_fd, temp, strlen(temp));
       ex = 1;
-       memset(buf, 0, sizeof(buf));
-     rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
+      memset(buf, 0, sizeof(buf));
+      rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
     }
     
   }
   return ex;
+}
+
+void * work(void* arg) {
+  pthread_detach(pthread_self());
+  
+  struct aThread *obj = arg;
+  int keep_going = 1;
+  int client_fd = obj->client_fd;
+  while (keep_going != -1) {
+    if (client_fd > 0) {
+      keep_going = chat_with_client(obj->calc, client_fd);
+    }
+    if(keep_going == 0) {
+      close(client_fd);
+    }
+  }
+  close(client_fd);
+  return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -75,21 +99,27 @@ int main(int argc, char **argv) {
   //create the calculator
   struct Calc *calc = calc_create();
   
-  printf("ARGUMENT: %s", argv[1]);
   int server_fd = open_listenfd(argv[1]);
   if (server_fd < 0) { return -1; }
-  int keep_going = 1;
-   int client_fd = Accept(server_fd, NULL, NULL);
-  while (keep_going != -1) {
-    if (client_fd > 0) {
-      keep_going = chat_with_client(calc, client_fd);
+  //int keep_going = 1;
+  while(1){
+    int clientfd = Accept(server_fd, NULL, NULL);
+    if (clientfd < 0) {
+      continue;
     }
-    if(keep_going == 0) {
-      close(client_fd);
-      client_fd = Accept(server_fd, NULL, NULL);
+    
+    /* create aThread object */
+    struct aThread *info = malloc(sizeof(struct aThread));
+    info->client_fd = clientfd;
+    info->calc = calc;
+    
+    /* start new thread to handle client connection */
+    pthread_t thr_id;
+    if (pthread_create(&thr_id, NULL, work, info) != 0) {
+      exit(1);
     }
   }
-  close(client_fd);
+  
   
   close(server_fd); // close server socket
   return 0;
