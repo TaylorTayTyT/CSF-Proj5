@@ -30,11 +30,13 @@ public:
 			std::vector<std::string> tokens = tokenize(expr);
 			size_t tokenSize = tokens.size();
 			int res;
+			pthread_mutex_lock(&this->lock);
 			switch(tokenSize) {
 				case 1:
+				  pthread_mutex_unlock(&this->lock);
 					return eval1(tokens, result);
 				case 3:
-					pthread_mutex_lock(&this->lock);
+				      
           if(isOperator(tokens[1]) == 3 && tokens[2] == "0") {
 						//error
 						pthread_mutex_unlock(&this->lock);
@@ -44,7 +46,7 @@ public:
 					pthread_mutex_unlock(&this->lock);
 					return eval3(tokens, result);
 				case 5:
-					pthread_mutex_lock(&this->lock);
+				        
           if(isOperator(tokens[3]) == 3 && tokens[4] == "0") {
 						//error
 						//std::cout <<"DIVIDE BY ZERO \n" << std::endl;
