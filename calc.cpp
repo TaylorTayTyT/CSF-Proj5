@@ -100,6 +100,11 @@ int Calc::eval1(std::vector<std::string> tokens, int* result) {
 
   int Calc::eval3(std::vector<std::string> tokens, int* result) {
     if(isOperator(tokens[1]) != 5) {
+      if(isValidVariable(tokens[0]) && !hasVariable(tokens[0])) {
+	return 0;
+      }
+      
+	
 			//std::cout << "WORKING: " << isOperator(tokens[1]) << tokens[0] << tokens[2] << std::endl;
 			*result = operation(isOperator(tokens[1]), tokens[0], tokens[2]);
       return 1;
