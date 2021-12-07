@@ -54,7 +54,7 @@ int chat_with_client(struct Calc *calc, int client_fd) {
       exit(1);
     }  else {
       
-      calc_eval(calc, buf, &val);
+      if(calc_eval(calc, buf, &val)) {
       
       snprintf(temp, 1024, "%d\n", val);
       
@@ -62,6 +62,13 @@ int chat_with_client(struct Calc *calc, int client_fd) {
       ex = 1;
       memset(buf, 0, sizeof(buf));
       rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
+      }
+      else {
+	rio_writen(client_fd, "Error\n", 6);
+	ex = 1;
+      memset(buf, 0, sizeof(buf));
+      rc = rio_readlineb(&rio, buf, sizeof(buf)-1);
+      }
     }
     
   }
