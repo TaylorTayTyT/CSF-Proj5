@@ -47,7 +47,7 @@ public:
 					pthread_mutex_lock(&this->lock);
           if(isOperator(tokens[3]) == 3 && tokens[4] == "0") {
 						//error
-						std::cout <<"DIVIDE BY ZERO \n" << std::endl;
+						//std::cout <<"DIVIDE BY ZERO \n" << std::endl;
 						pthread_mutex_unlock(&this->lock);
             return 0;
           }
@@ -132,23 +132,23 @@ int Calc::eval1(std::vector<std::string> tokens, int* result) {
 
 	int Calc::eval5(std::vector<std::string> tokens, int* result) {
 		if(!isValidVariable(tokens[0])){
-			std::cout << 1 << std::endl;
+		       
 			return 0;
 		}
 		if(tokens[1][0] != '=') {
-			std::cout << 2 << std::endl;
+	
 			return 0;
 		}
 		
 		//check if operands are valid
 		if(!(isValidOperand(tokens[2]) && isValidOperand(tokens[4]))) {
-			std::cout << 3 << std::endl;
+		      
 			return 0;
 		}
 		
 		int oper = isOperator(tokens[3]);
 		if(oper == -1) {
-			std::cout << 4 << std::endl;
+	    
 			return 0;
 		}
 
