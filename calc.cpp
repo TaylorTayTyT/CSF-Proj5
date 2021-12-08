@@ -57,7 +57,7 @@ public:
       pthread_mutex_unlock(&this->lock);
       return res;
     default:
-      //pthread_mutex_unlock(&this->lock);
+      pthread_mutex_unlock(&this->lock);
       return 0;
     }
   }
