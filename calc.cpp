@@ -18,8 +18,6 @@ public:
   // public member functions
   Calc() {
     pthread_mutex_init(&this->lock, NULL);
-    //variableMap = new std::map<std::string, int>;
-    //isOperator('+');
   }
   ~Calc(){
     variableMap.clear();
@@ -27,10 +25,10 @@ public:
   }
   
   int evalExpr(const char *expr, int *result) {
+     pthread_mutex_lock(&this->lock);
     std::vector<std::string> tokens = tokenize(expr);
     size_t tokenSize = tokens.size();
     int res;
-    pthread_mutex_lock(&this->lock);
     switch(tokenSize) {
     case 1:
       pthread_mutex_unlock(&this->lock);
@@ -44,7 +42,6 @@ public:
       }
       res = eval3(tokens, result);
       pthread_mutex_unlock(&this->lock);
-      //return eval3(tokens, result);
       return res;
     case 5:
       
@@ -304,8 +301,3 @@ extern "C" void calc_destroy(struct Calc *calc) {
 extern "C" int calc_eval(struct Calc *calc, const char *expr, int *result) {
   return calc->evalExpr(expr, result);
 }
-
-
-
-
-
