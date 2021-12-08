@@ -44,7 +44,8 @@ public:
       }
       res = eval3(tokens, result);
       pthread_mutex_unlock(&this->lock);
-      return eval3(tokens, result);
+      //return eval3(tokens, result);
+      return res;
     case 5:
       
       if(isOperator(tokens[3]) == 3 && tokens[4] == "0") {
