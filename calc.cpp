@@ -25,7 +25,9 @@ public:
   }
   
   int evalExpr(const char *expr, int *result) {
-     pthread_mutex_lock(&this->lock);
+    //does the evaluation by calling appropriate helper function
+    //This is alos the critical section, so threads are locked here
+    pthread_mutex_lock(&this->lock);
     std::vector<std::string> tokens = tokenize(expr);
     size_t tokenSize = tokens.size();
     int res;
@@ -47,7 +49,6 @@ public:
       
       if(isOperator(tokens[3]) == 3 && tokens[4] == "0") {
 	//error
-	//std::cout <<"DIVIDE BY ZERO \n" << std::endl;
 	pthread_mutex_unlock(&this->lock);
 	return 0;
       }
@@ -74,7 +75,7 @@ private:
   bool hasVariable(std::string var);
   void updateVariable(std::string var, std::string update);
   
-  //if token size is one
+ 
   
 };
 
@@ -105,8 +106,7 @@ int Calc::eval3(std::vector<std::string> tokens, int* result) {
       return 0;
     }
     
-    
-    //std::cout << "WORKING: " << isOperator(tokens[1]) << tokens[0] << tokens[2] << std::endl;
+  
     *result = operation(isOperator(tokens[1]), tokens[0], tokens[2]);
     return 1;
   }
@@ -116,8 +116,6 @@ int Calc::eval3(std::vector<std::string> tokens, int* result) {
     }
   }
   else if(isValidVariable(tokens[0]) && (isOperator(tokens[1]) == 5)) {
-    //std::cout << tokens.size() << std::endl;
-    //std::cout << tokens[2] << std::endl;
     updateVariable(tokens[0], tokens[2]);
     if(isValidVariable(tokens[2])) {
       *result = variableMap[tokens[2]];
@@ -154,8 +152,6 @@ int Calc::eval5(std::vector<std::string> tokens, int* result) {
   }
   
   int value = operation(oper, tokens[2], tokens[4]);
-  //std::cout << "DOING: " << oper << tokens[2] << tokens[4] << std::endl;
-  //std::cout << "Result of operator: " << value << std::endl;
   variableMap[tokens[0]] = value;
   *result = value;
   return 1;
