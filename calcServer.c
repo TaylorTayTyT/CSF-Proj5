@@ -81,14 +81,12 @@ void * work(void* arg) {
   struct aThread *obj = arg;
   int keep_going = 1;
   int client_fd = obj->client_fd;
-  while (keep_going != -1) {
     if (client_fd > 0) {
       keep_going = chat_with_client(obj->calc, client_fd);
     }
     if(keep_going == 0) {
       close(client_fd);
     }
-  }
   close(client_fd);
   return NULL;
 }
